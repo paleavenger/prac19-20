@@ -1,87 +1,233 @@
 // src/App.jsx
-import { useState } from 'react';
-import TechnologyCard from '../src/components/TechnologyCard.jsx';
-import './App.css';
-import Statistics from './Statistics';
-import QuickActions from './QuickActions';
-
+import { useMemo, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider, CssBaseline, Box, Container, Snackbar, Alert } from '@mui/material';
+import useTechnologies from './useTechnologies';
+import TechnologyModal from './components/TechnologyModal';
+import Navigation from './components/Navigation';
+import Home from './pages/Home';
+import TechnologyList from './pages/TechnologyList';
+import TechnologyDetail from './pages/TechnologyDetail';
+import AddTechnology from './pages/AddTechnology';
+import StatsPage from './pages/StatsPage';
+import SettingsPage from './pages/SettingsPage';
+import ApiIntegration from './pages/ApiIntegration';
+import ApiSearchPage from './pages/ApiSearchPage';
+import DataImportExport from './pages/DataImportExport';
+import BulkStatusPage from './pages/BulkStatusPage';
+import MuiDashboard from './pages/MuiDashboard';
+import MuiCardsPage from './pages/MuiCardsPage';
+import NotificationsPage from './pages/NotificationsPage';
+import useThemeMode from './hooks/useThemeMode';
 
 function App() {
-    const [technologies, setTechnologies] = useState([
-        {
-            id: 1,
-            title: 'React Components',
-            description: 'Изучение базовых компонентов',
-            status: 'not-started'
-        },
-        {
-            id: 2,
-            title: 'JSX Syntax',
-            description: 'Освоение синтаксиса JSX',
-            status: 'not-started'
-        },
-        {
-            id: 3,
-            title: 'Props & State',
-            description: 'Передача данных и управление состоянием',
-            status: 'not-started'
-        }
-    ]);
+    const {
+        technologies,
+        updateStatus,
+        updateNotes,
+        markAllCompleted,
+        resetStatuses,
+        restoreInitial,
+        addTechnology,
+        bulkUpdateStatus,
+        replaceTechnologies,
+        exportData,
+        progress
+    } = useTechnologies();
 
-    const changeStatus = (id) => {
-        setTechnologies(prev =>
-            prev.map(tech => {
-                if (tech.id !== id) return tech;
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filter, setFilter] = useState("all");
+    const [selectedTech, setSelectedTech] = useState(null);
+    const { mode, theme, toggleMode } = useThemeMode();
+    const [snackbar, setSnackbar] = useState({ open: false, severity: 'success', message: '' });
 
-                let newStatus = 'not-started';
-
-                if (tech.status === 'not-started') newStatus = 'in-progress';
-                else if (tech.status === 'in-progress') newStatus = 'completed';
-                else if (tech.status === 'completed') newStatus = 'not-started';
-
-                return { ...tech, status: newStatus };
-            })
-        );
+    const showSnackbar = (severity, message) => {
+        setSnackbar({ open: true, severity, message });
     };
 
-    const [filter, setFilter] = useState("all");
+    const handleCloseSnackbar = (_, reason) => {
+        if (reason === 'clickaway') return;
+        setSnackbar(prev => ({ ...prev, open: false }));
+    };
 
-    const filteredTechnologies = technologies.filter(t => {
-        if (filter === "all") return true;
-        return t.status === filter;
-    });
+    const changeStatus = (id, currentStatus) => {
+        let newStatus = 'not-started';
+        if (currentStatus === 'not-started') newStatus = 'in-progress';
+        else if (currentStatus === 'in-progress') newStatus = 'completed';
+        else if (currentStatus === 'completed') newStatus = 'not-started';
+        updateStatus(id, newStatus);
+    };
 
+    const filteredTechnologies = useMemo(() => technologies
+        .filter(tech =>
+            tech.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            tech.description.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .filter(t => {
+            if (filter === "all") return true;
+            return t.status === filter;
+        }), [technologies, searchQuery, filter]);
+
+    const handleExport = (data = technologies) => {
+        const payload = exportData(data);
+        const blob = new Blob([payload], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'technologies.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
+    const handlePickRandom = () => {
+        const available = technologies.filter(t => t.status === 'not-started');
+        if (available.length === 0) {
+            showSnackbar('warning', 'Нет доступных технологий для изучения');
+            return;
+        }
+        const random = available[Math.floor(Math.random() * available.length)];
+        updateStatus(random.id, 'in-progress');
+        showSnackbar('info', `Случайная технология: ${random.title} → В процессе`);
+    };
+
+    const handleBulkApply = (ids, status) => {
+        bulkUpdateStatus(ids, status);
+        showSnackbar('success', `Статус "${status}" применён для ${ids.length} элементов`);
+    };
 
     return (
-        <div className="App">
-            <h1>Дорожная карта изучения</h1>
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <Router>
+                <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary' }}>
+                    <Navigation themeMode={mode} onToggleTheme={toggleMode} />
+                    <Container maxWidth="lg" sx={{ py: 3 }}>
+                        <Routes>
+                            <Route
+                                path="/"
+                                element={
+                                    <Home
+                                        technologies={technologies}
+                                        progress={progress}
+                                        onStatusChange={changeStatus}
+                                        onNotesChange={updateNotes}
+                                        onOpenDetails={setSelectedTech}
+                                    />
+                                }
+                            />
+                        <Route
+                            path="/technologies"
+                            element={
+                                <TechnologyList
+                                    technologies={filteredTechnologies}
+                                    total={technologies.length}
+                                    searchQuery={searchQuery}
+                                    setSearchQuery={setSearchQuery}
+                                    filter={filter}
+                                    setFilter={setFilter}
+                                    onStatusChange={changeStatus}
+                                    onNotesChange={updateNotes}
+                                    onOpenDetails={setSelectedTech}
+                                    onMarkAllCompleted={markAllCompleted}
+                                    onResetAll={resetStatuses}
+                                    onPickRandom={handlePickRandom}
+                                    onExport={handleExport}
+                                />
+                            }
+                        />
+                        <Route
+                            path="/technology/:techId"
+                            element={
+                                <TechnologyDetail
+                                    technologies={technologies}
+                                    onStatusChange={updateStatus}
+                                    onNotesChange={updateNotes}
+                                />
+                            }
+                        />
+                        <Route
+                            path="/add-technology"
+                            element={<AddTechnology onAdd={addTechnology} />}
+                        />
+                        <Route
+                            path="/stats"
+                            element={<StatsPage technologies={technologies} progress={progress} />}
+                        />
+                        <Route
+                            path="/settings"
+                            element={
+                                <SettingsPage
+                                    onResetAll={resetStatuses}
+                                    onRestoreInitial={restoreInitial}
+                                    onExport={() => handleExport(technologies)}
+                                />
+                            }
+                        />
+                        <Route
+                            path="/api"
+                            element={<ApiIntegration onImport={addTechnology} />}
+                        />
+                            <Route
+                                path="/api-search"
+                                element={<ApiSearchPage onImport={addTechnology} />}
+                            />
+                            <Route
+                                path="/data"
+                                element={
+                                    <DataImportExport
+                                        technologies={technologies}
+                                        onReplace={replaceTechnologies}
+                                    />
+                                }
+                            />
+                            <Route
+                                path="/bulk"
+                                element={
+                                    <BulkStatusPage
+                                        technologies={technologies}
+                                        onApply={handleBulkApply}
+                                    />
+                                }
+                            />
+                            <Route
+                                path="/mui-dashboard"
+                                element={<MuiDashboard technologies={technologies} />}
+                            />
+                            <Route
+                                path="/mui-cards"
+                                element={
+                                    <MuiCardsPage
+                                        technologies={technologies}
+                                        onStatusChange={updateStatus}
+                                    />
+                                }
+                            />
+                            <Route
+                                path="/notifications"
+                                element={<NotificationsPage />}
+                            />
+                        </Routes>
+                    </Container>
 
-            <QuickActions
-                technologies={technologies}
-                setTechnologies={setTechnologies}
-            />
-
-
-            <Statistics technologies={technologies} />
-
-            <div className="filters">
-                <button onClick={() => setFilter("all")}>Все</button>
-                <button onClick={() => setFilter("not-started")}>Не начато</button>
-                <button onClick={() => setFilter("in-progress")}>В процессе</button>
-                <button onClick={() => setFilter("completed")}>Завершено</button>
-            </div>
-
-
-            <div className="technology-list">
-                {filteredTechnologies.map(tech => (
-                    <TechnologyCard
-                        key={tech.id}
-                        technology={tech}
-                        onStatusChange={changeStatus}
+                    <TechnologyModal
+                        technology={selectedTech}
+                        onClose={() => setSelectedTech(null)}
+                        onStatusChange={updateStatus}
+                        onNotesChange={updateNotes}
                     />
-                ))}
-            </div>
-        </div>
+                </Box>
+            </Router>
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={3000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} variant="filled" sx={{ width: '100%' }}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
+        </ThemeProvider>
     );
 }
 

@@ -1,37 +1,35 @@
 import React from 'react';
+import { Grid, LinearProgress, Paper, Stack, Typography } from '@mui/material';
 
-/**
- * Props:
- * - technologies: array of { id, title, description, status }
- */
 function ProgressHeader({ technologies = [] }) {
     const total = technologies.length;
     const completed = technologies.filter(t => t.status === 'completed').length;
     const percent = total === 0 ? 0 : Math.round((completed / total) * 100);
 
     return (
-        <div className="progress-header">
-            <div className="stats">
-                <div className="stat">
-                    <div className="stat-num">{total}</div>
-                    <div className="stat-label">Всего технологий</div>
-                </div>
-                <div className="stat">
-                    <div className="stat-num">{completed}</div>
-                    <div className="stat-label">Изучено</div>
-                </div>
-                <div className="stat">
-                    <div className="stat-num">{percent}%</div>
-                    <div className="stat-label">Прогресс</div>
-                </div>
-            </div>
-
-            <div className="overall-progress">
-                <div className="overall-bar">
-                    <div className="overall-fill" style={{ width: `${percent}%` }} />
-                </div>
-            </div>
-        </div>
+        <Paper variant="outlined" sx={{ p: 2 }}>
+            <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} md={8}>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                        <Stack>
+                            <Typography variant="h6">{total}</Typography>
+                            <Typography variant="body2" color="text.secondary">Всего технологий</Typography>
+                        </Stack>
+                        <Stack>
+                            <Typography variant="h6">{completed}</Typography>
+                            <Typography variant="body2" color="text.secondary">Изучено</Typography>
+                        </Stack>
+                        <Stack>
+                            <Typography variant="h6">{percent}%</Typography>
+                            <Typography variant="body2" color="text.secondary">Прогресс</Typography>
+                        </Stack>
+                    </Stack>
+                </Grid>
+                <Grid item xs={12} md={4}>
+                    <LinearProgress variant="determinate" value={percent} sx={{ height: 10, borderRadius: 2 }} />
+                </Grid>
+            </Grid>
+        </Paper>
     );
 }
 

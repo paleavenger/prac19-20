@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1001,
+    "title": "React",
+    "description": "Библиотека для построения UI",
+    "category": "frontend",
+    "status": "in-progress",
+    "notes": "Hooks + Router",
+    "resources": ["https://react.dev/"]
+  },
+  {
+    "id": 1002,
+    "title": "Node.js",
+    "description": "Запуск JS на сервере",
+    "category": "backend",
+    "status": "not-started",
+    "notes": "",
+    "resources": ["https://nodejs.org/en/docs"]
+  },
+  {
+    "id": 1003,
+    "title": "PostgreSQL",
+    "description": "Реляционная БД",
+    "category": "database",
+    "status": "completed",
+    "notes": "Настроены бэкапы",
+    "resources": ["https://www.postgresql.org/docs/"]
+  }
+]
+

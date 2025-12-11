@@ -1,0 +1,32 @@
+.technology-card {
+    padding: 16px;
+    border-left: 6px solid #ccc;
+    border-radius: 10px;
+    background: white;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.technology-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.10);
+}
+
+/* Цвета под статус */
+.status-not-started {
+    border-left-color: #ff6b6b;
+}
+
+.status-in-progress {
+    border-left-color: #4ecdc4;
+}
+
+.status-completed {
+    border-left-color: #45b7d1;
+}
+
+.status-label {
+    font-size: 0.85rem;
+    opacity: 0.8;
+}

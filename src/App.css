@@ -1,0 +1,101 @@
+/* Общие настройки */
+:root {
+    --bg: #f7f8fb;
+    --card-bg: #ffffff;
+    --accent: #667eea;
+    --text: #222;
+    --muted: #666;
+    --success: #4caf50;
+    --warning: #ff9800;
+    --danger: #e53935;
+}
+
+* { box-sizing: border-box; }
+body, html, #root { height: 100%; margin: 0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; background: var(--bg); color: var(--text); }
+
+.App {
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 20px;
+}
+
+.App-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 6px 18px rgba(102, 126, 234, 0.18);
+}
+
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+    margin-top: 20px;
+}
+.stats-block {
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 20px;
+    border: 1px solid #e6e6e6;
+}
+
+.stats-block ul {
+    padding-left: 20px;
+}
+.quick-actions {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+.quick-actions button {
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: none;
+    background: #667eea;
+    color: white;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.quick-actions button:hover {
+    opacity: 0.85;
+}
+.filters {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.filters button {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    cursor: pointer;
+}
+
+.filters button:hover {
+    background: #f0f0f0;
+}
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background: #e6e6e6;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    width: 0;
+    border-radius: 10px;
+    transition: width 0.5s ease-in-out;
+}
+
+
